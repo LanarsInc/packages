@@ -106,6 +106,7 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
 
 - (void)launchPHPickerWithContext:(nonnull FLTImagePickerMethodCallContext *)context
     API_AVAILABLE(ios(14)) {
+  NSLog(@"iOS - in launchPHPickerWithContext");
   PHPickerConfiguration *config =
       [[PHPickerConfiguration alloc] initWithPhotoLibrary:PHPhotoLibrary.sharedPhotoLibrary];
   config.selectionLimit = context.maxImageCount;
@@ -123,8 +124,10 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
   self.callContext = context;
 
   if (context.requestFullMetadata) {
+    NSLog(@"iOS - call checkPhotoAuthorizationForAccessLevel");
     [self checkPhotoAuthorizationForAccessLevel];
   } else {
+    NSLog(@"iOS - call showPhotoLibraryWithPHPicker");
     [self showPhotoLibraryWithPHPicker:_pickerViewController];
   }
 }
@@ -202,6 +205,7 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
                      fullMetadata:(NSNumber *)fullMetadata
                        completion:(nonnull void (^)(NSArray<NSString *> *_Nullable,
                                                     FlutterError *_Nullable))completion {
+  NSLog(@"iOS - in pickMultiImageWithMaxSize");
   FLTImagePickerMethodCallContext *context =
       [[FLTImagePickerMethodCallContext alloc] initWithResult:completion];
   context.maxSize = maxSize;
@@ -210,8 +214,10 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
   context.maxImageCount = [maxImages intValue];
 
   if (@available(iOS 14, *)) {
+    NSLog(@"iOS - launchPHPickerWithContext");
     [self launchPHPickerWithContext:context];
   } else {
+    NSLog(@"iOS - launchUIImagePickerWithSource");
     // Camera is ignored for gallery mode, so the value here is arbitrary.
     [self launchUIImagePickerWithSource:[FLTSourceSpecification makeWithType:FLTSourceTypeGallery
                                                                       camera:FLTSourceCameraRear]
@@ -396,6 +402,7 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
 }
 
 - (void)checkPhotoAuthorizationForAccessLevel API_AVAILABLE(ios(14)) {
+  NSLog(@"iOS - in checkPhotoAuthorizationForAccessLevel");
   PHAccessLevel requestedAccessLevel = PHAccessLevelReadWrite;
   PHAuthorizationStatus status =
       [PHPhotoLibrary authorizationStatusForAccessLevel:requestedAccessLevel];
@@ -422,6 +429,7 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
     }
     case PHAuthorizationStatusAuthorized:
     case PHAuthorizationStatusLimited:
+      NSLog(@"iOS - call showPhotoLibraryWithPHPicker");
       [self showPhotoLibraryWithPHPicker:_pickerViewController];
       break;
     case PHAuthorizationStatusDenied:
@@ -470,6 +478,7 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
 
 - (void)showPhotoLibraryWithPHPicker:(PHPickerViewController *)pickerViewController
     API_AVAILABLE(ios(14)) {
+  NSLog(@"iOS - in showPhotoLibraryWithPHPicker");
   [[self viewControllerWithWindow:nil] presentViewController:pickerViewController
                                                     animated:YES
                                                   completion:nil];
@@ -503,6 +512,7 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
 
 - (void)picker:(PHPickerViewController *)picker
     didFinishPicking:(NSArray<PHPickerResult *> *)results API_AVAILABLE(ios(14)) {
+  NSLog(@"iOS - in picker");
   [picker dismissViewControllerAnimated:YES completion:nil];
   if (results.count == 0) {
     [self sendCallResultWithSavedPathList:nil];
@@ -527,6 +537,7 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
     if (saveError != nil) {
       [weakSelf sendCallResultWithError:saveError];
     } else {
+      NSLog(@"iOS - call sendCallResultWithSavedPathList");
       [weakSelf sendCallResultWithSavedPathList:pathList];
     }
     // Retain queue until here.
@@ -544,6 +555,8 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
             desiredImageQuality:desiredImageQuality
                    fullMetadata:requestFullMetadata
                  savedPathBlock:^(NSString *savedPath, FlutterError *error) {
+                   NSLog(@"iOS - in savedPathBlock");
+                   NSLog(@"%@", savedPath);
                    if (savedPath != nil) {
                      pathList[index] = savedPath;
                    } else {
@@ -563,6 +576,7 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
 
 - (void)imagePickerController:(UIImagePickerController *)picker
     didFinishPickingMediaWithInfo:(NSDictionary<NSString *, id> *)info {
+  NSLog(@"iOS - in imagePickerController");
   NSURL *videoURL = info[UIImagePickerControllerMediaURL];
   [picker dismissViewControllerAnimated:YES completion:nil];
   // The method dismissViewControllerAnimated does not immediately prevent
@@ -630,6 +644,8 @@ typedef NS_ENUM(NSInteger, ImagePickerClassType) { UIImagePickerClassType, PHPic
                                                      NSString *_Nullable dataUTI,
                                                      CGImagePropertyOrientation orientation,
                                                      NSDictionary *_Nullable info) {
+                                       NSLog(@"Orientation iOS");
+                                       NSLog(@"%@", orientation);
                                        resultHandler(imageData, dataUTI, info);
                                      }];
       } else {

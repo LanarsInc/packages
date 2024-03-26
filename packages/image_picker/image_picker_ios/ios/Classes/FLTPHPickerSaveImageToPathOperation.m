@@ -32,6 +32,7 @@ API_AVAILABLE(ios(14))
            desiredImageQuality:(NSNumber *)desiredImageQuality
                   fullMetadata:(BOOL)fullMetadata
                 savedPathBlock:(FLTGetSavedPath)savedPathBlock API_AVAILABLE(ios(14)) {
+  NSLog(@"iOS - in FLTPHPickerSaveImageToPathOperation.initWithResult");
   if (self = [super init]) {
     if (result) {
       self.result = result;
@@ -82,6 +83,7 @@ API_AVAILABLE(ios(14))
 }
 
 - (void)start {
+  NSLog(@"iOS - in FLTPHPickerSaveImageToPathOperation.start");
   if ([self isCancelled]) {
     [self setFinished:YES];
     return;
@@ -98,8 +100,10 @@ API_AVAILABLE(ios(14))
                                 completionHandler:^(NSData *_Nullable data,
                                                     NSError *_Nullable error) {
                                   if (data != nil) {
+                                    NSLog(@"iOS - call processImage");
                                     [self processImage:data];
                                   } else {
+                                      NSLog(@"iOS - flutter error in FLTPHPickerSaveImageToPathOperation.start");
                                     FlutterError *flutterError =
                                         [FlutterError errorWithCode:@"invalid_image"
                                                             message:error.localizedDescription
@@ -128,22 +132,26 @@ API_AVAILABLE(ios(14))
  * Processes the image.
  */
 - (void)processImage:(NSData *)pickerImageData API_AVAILABLE(ios(14)) {
+  NSLog(@"iOS - in FLTPHPickerSaveImageToPathOperation.processImage");
   UIImage *localImage = [[UIImage alloc] initWithData:pickerImageData];
 
   PHAsset *originalAsset;
   // Only if requested, fetch the full "PHAsset" metadata, which requires  "Photo Library Usage"
   // permissions.
   if (self.requestFullMetadata) {
+    NSLog(@"iOS - get original asset");
     originalAsset = [FLTImagePickerPhotoAssetUtil getAssetFromPHPickerResult:self.result];
   }
 
   if (self.maxWidth != nil || self.maxHeight != nil) {
+    NSLog(@"iOS - scale image");
     localImage = [FLTImagePickerImageUtil scaledImage:localImage
                                              maxWidth:self.maxWidth
                                             maxHeight:self.maxHeight
                                   isMetadataAvailable:YES];
   }
   if (originalAsset) {
+    NSLog(@"iOS - with original asset");
     void (^resultHandler)(NSData *imageData, NSString *dataUTI, NSDictionary *info) =
         ^(NSData *_Nullable imageData, NSString *_Nullable dataUTI, NSDictionary *_Nullable info) {
           // maxWidth and maxHeight are used only for GIF images.
@@ -163,6 +171,9 @@ API_AVAILABLE(ios(14))
                                                    NSString *_Nullable dataUTI,
                                                    CGImagePropertyOrientation orientation,
                                                    NSDictionary *_Nullable info) {
+                                     NSLog(@"iOS - requestImageDataAndOrientationForAsset");
+                                     NSLog(@"iOS - orientation");
+                                     NSLog(@"%i", orientation);
                                      resultHandler(imageData, dataUTI, info);
                                    }];
     } else {

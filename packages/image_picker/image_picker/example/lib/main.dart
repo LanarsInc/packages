@@ -10,6 +10,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_picker_example/logger/logger/print_exif.dart';
 import 'package:mime/mime.dart';
 import 'package:video_player/video_player.dart';
 
@@ -96,8 +97,8 @@ class _MyHomePageState extends State<MyHomePage> {
     }
     if (context.mounted) {
       if (isVideo) {
-        final XFile? file = await _picker.pickVideo(
-            source: source, maxDuration: const Duration(seconds: 10));
+        final XFile? file =
+            await _picker.pickVideo(source: source, maxDuration: const Duration(seconds: 10));
         await _playVideo(file);
       } else if (isMultiImage) {
         await _displayPickImageDialog(context,
@@ -114,6 +115,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     maxHeight: maxHeight,
                     imageQuality: quality,
                   );
+
+
+            await Future.wait(pickedFileList.map((e) async {
+              final originalFile = File(e.path);
+              await _lookupMimeType(e);
+              await printExifData(originalFile);
+            }));
+
             setState(() {
               _mediaFileList = pickedFileList;
             });
@@ -233,11 +242,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   : (mime == null || mime.startsWith('image/')
                       ? Image.file(
                           File(_mediaFileList![index].path),
-                          errorBuilder: (BuildContext context, Object error,
-                              StackTrace? stackTrace) {
-                            return const Center(
-                                child:
-                                    Text('This image type is not supported'));
+                          errorBuilder:
+                              (BuildContext context, Object error, StackTrace? stackTrace) {
+                            return const Center(child: Text('This image type is not supported'));
                           },
                         )
                       : _buildInlineVideoPlayer(index)),
@@ -457,8 +464,7 @@ class _MyHomePageState extends State<MyHomePage> {
     return null;
   }
 
-  Future<void> _displayPickImageDialog(
-      BuildContext context, OnPickImageCallback onPick) async {
+  Future<void> _displayPickImageDialog(BuildContext context, OnPickImageCallback onPick) async {
     return showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -469,23 +475,18 @@ class _MyHomePageState extends State<MyHomePage> {
               children: <Widget>[
                 TextField(
                   controller: maxWidthController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                      hintText: 'Enter maxWidth if desired'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(hintText: 'Enter maxWidth if desired'),
                 ),
                 TextField(
                   controller: maxHeightController,
-                  keyboardType:
-                      const TextInputType.numberWithOptions(decimal: true),
-                  decoration: const InputDecoration(
-                      hintText: 'Enter maxHeight if desired'),
+                  keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                  decoration: const InputDecoration(hintText: 'Enter maxHeight if desired'),
                 ),
                 TextField(
                   controller: qualityController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(
-                      hintText: 'Enter quality if desired'),
+                  decoration: const InputDecoration(hintText: 'Enter quality if desired'),
                 ),
               ],
             ),
@@ -517,8 +518,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-typedef OnPickImageCallback = void Function(
-    double? maxWidth, double? maxHeight, int? quality);
+typedef OnPickImageCallback = void Function(double? maxWidth, double? maxHeight, int? quality);
 
 class AspectRatioVideo extends StatefulWidget {
   const AspectRatioVideo(this.controller, {super.key});
@@ -568,4 +568,14 @@ class AspectRatioVideoState extends State<AspectRatioVideo> {
       return Container();
     }
   }
+}
+
+Future<String?> _lookupMimeType(XFile xFile) async {
+  final bytes = await xFile.readAsBytes();
+  final mimeType = lookupMimeType(
+    xFile.path,
+    headerBytes: bytes.take(defaultMagicNumbersMaxLength).toList(),
+  );
+  print('mimeType: $mimeType');
+  return mimeType;
 }

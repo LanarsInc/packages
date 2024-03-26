@@ -215,6 +215,7 @@ void FLTImagePickerApiSetup(id<FlutterBinaryMessenger> binaryMessenger, NSObject
         binaryMessenger:binaryMessenger
         codec:FLTImagePickerApiGetCodec()];
     if (api) {
+      NSLog(@"iOS - in pickMultiImage");
       NSCAssert([api respondsToSelector:@selector(pickMultiImageWithMaxSize:quality:maxImages:fullMetadata:completion:)], @"FLTImagePickerApi api (%@) doesn't respond to @selector(pickMultiImageWithMaxSize:quality:maxImages:fullMetadata:completion:)", api);
       [channel setMessageHandler:^(id _Nullable message, FlutterReply callback) {
         NSArray *args = message;
