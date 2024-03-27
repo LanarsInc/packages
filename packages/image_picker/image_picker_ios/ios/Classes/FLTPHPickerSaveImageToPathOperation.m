@@ -143,7 +143,8 @@ API_AVAILABLE(ios(14))
     originalAsset = [FLTImagePickerPhotoAssetUtil getAssetFromPHPickerResult:self.result];
   }
 
-  NSLog(@"%ld", (long)originalAsset.mediaType);
+  NSLog(@"iOS - original asset:");
+  NSLog(@"%@", originalAsset);
 
   if (self.maxWidth != nil || self.maxHeight != nil) {
     NSLog(@"iOS - scale image");
@@ -156,6 +157,7 @@ API_AVAILABLE(ios(14))
     NSLog(@"iOS - with original asset");
     void (^resultHandler)(NSData *imageData, NSString *dataUTI, NSDictionary *info) =
         ^(NSData *_Nullable imageData, NSString *_Nullable dataUTI, NSDictionary *_Nullable info) {
+          NSLog(@"iOS - in result handler");
           // maxWidth and maxHeight are used only for GIF images.
           NSString *savedPath = [FLTImagePickerPhotoAssetUtil
               saveImageWithOriginalImageData:imageData
