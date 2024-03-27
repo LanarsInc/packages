@@ -143,6 +143,8 @@ API_AVAILABLE(ios(14))
     originalAsset = [FLTImagePickerPhotoAssetUtil getAssetFromPHPickerResult:self.result];
   }
 
+  NSLog(@"%ld", (long)originalAsset.mediaType);
+
   if (self.maxWidth != nil || self.maxHeight != nil) {
     NSLog(@"iOS - scale image");
     localImage = [FLTImagePickerImageUtil scaledImage:localImage
