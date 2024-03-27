@@ -174,7 +174,10 @@ API_AVAILABLE(ios(14))
                                      NSLog(@"iOS - requestImageDataAndOrientationForAsset");
                                      NSLog(@"iOS - orientation");
                                      NSLog(@"%i", orientation);
-                                     NSLog(@"%@", info);
+                                     NSLog(@"print dictionary");
+                                     for(NSString *key in [dict allKeys]) {
+                                       NSLog(@"%@",[dict objectForKey:key]);
+                                     }
                                      resultHandler(imageData, dataUTI, info);
                                    }];
     } else {
